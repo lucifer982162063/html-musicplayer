@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>music player</title>
+    <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+    <link href="//netdna.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/index.css">
+</head>
+
+<body load='changemusicname'>
+    <div class='music-player'>
+        <audio src='../music/1.mp3' id='music'></audio>
+        <div class='musicimg'>
+            <span>
+                <img src="../image/1.jpg" width="80" height="80" id='img'>
+            </span>
+            <i class="fa fa-play-circle-o" aria-hidden="true"></i>
+        </div>
+        <div class='controller'>
+            <span id='musicname'>musicname</span>
+            <div class='main-control'>
+                <i class="fa fa-backward" aria-hidden="true" id="last"></i>
+                <i class="fa fa-play" aria-hidden="true" id="play"></i>
+                <i class="fa fa-forward" aria-hidden="true" id="next"></i>
+            </div>
+            <div class='playinfo'>
+                <div class='process'>
+                    <div class='pass'></div>
+                    <div class='time-position'></div>
+                </div>
+                <span id='time'></span>
+            </div>
+        </div>
+        <div id='hidden'>
+            <i class="fa fa-angle-left" aria-hidden="true"></i>
+        </div>
+    </div>
+
+    <script>
+        var musicname = ['Ramin-Just Like A Gold Rush', 'Christopher Larkin-City of Tears', 'fhána-ワンダーステラ',
+            'Hanser-Cyberangel', 'Hanser-勾指起誓', '出羽良彰-Cry for the moon', '川井憲次-騎士王の誇り',
+            '菅野祐悟-il vento doro', '斯卡布罗集市', '小林未郁-千年之羽'
+        ]
+        var playState = false;
+        var musicnum = 1;
+        var hidden = false;
+        var current = $('#music')[0].currentTime
+        var duration = $('#music')[0].duration
+        process()
+        changemusicname(musicnum)
+        time()
+        listenStop()
+
+        function listenStop() {
+            var current = $('#music')[0].currentTime
+            var duration = $('#music')[0].duration
+            setTimeout(() => {
+                if (current == duration) {
+                    playNext()
+                }
+                return listenStop()
+            }, 1000);
+        }
+
+        function process() {
+            var current = $('#music')[0].currentTime
+            var duration = $('#music')[0].duration
+            $('.pass').css('width', ~~(200 * current / duration))
+            var offsetWidth = $('.pass')[0].offsetWidth
+            $('.time-position').css("left", offsetWidth - 3)
+        }
+
+        function changemusicname(musicnum) {
+            musicnum--
+            $('#musicname').text(musicname[musicnum])
+
+        }
+
+        function playNext() {
+            var play = $('#music')[0]
+            changemusicname(musicnum + 1)
+            process()
+            time()
+            musicnum++
+            if (musicnum == 11) {
+                musicnum = 1
+            }
+            $('#music').attr('src', '../music/' + musicnum + ".mp3")
+            $('#img').attr('src', '../image/' + musicnum + ".jpg")
+            play.play()
+        }
+
+        function time() {
+            var current = $('#music')[0].currentTime
+            var duration = $('#music')[0].duration
+            if (isNaN(duration) == true) {
+                var minutes = 0
+                var seconds = 0
+            } else {
+                var minutes = duration / 60
+                var seconds = duration % 60
+            }
+            var currentMinutes = current / 60
+            var currentSeconds = current % 60
+            var result = ~~(currentMinutes) + ":" + ~~(+currentSeconds) + "/" + ~~(minutes) + ":" + ~~(seconds)
+            $('#time').html(result)
+
+        }
+        $('.musicimg').click(function () {
+            var play = $('#music')[0]
+            var listen = function () {
+                setTimeout(() => {
+                    process();
+                    time();
+                    if (playState == false) {
+                        return;
+                    }
+                    return listen()
+                }, 1000);
+            }
+            if (playState == false) {
+                $('.musicimg i').removeClass('fa fa - play - circle - o')
+                $('.musicimg i').addClass('fa fa-pause-circle-o')
+                $('.musicimg i').addClass('musicimgPause')
+                $('#play').removeClass('fa fa-play')
+                $('#play').addClass('fa fa-pause')
+                play.play()
+                listen()
+                playState = true;
+                return;
+            }
+            if (playState == true) {
+                $('.musicimg i').removeClass('musicimgPause')
+                $('.musicimg i').removeClass('fa fa-pause-circle-o')
+                $('.musicimg i').addClass('fa fa - play - circle - o')
+                $('#play').removeClass('fa fa-pause')
+                $('#play').addClass('fa fa-play')
+                play.pause()
+                playState = false;
+                return;
+            }
+        })
+        $('.time-position').mousedown(function (e) {
+            var processX = $(this)[0].offsetParent.offsetLeft + 90;
+            document.onmousemove = function (e) {
+                var x = e.clientX
+                $('.time-position').css("left", x - processX - 5)
+                $('.pass').css('width', x - processX)
+
+            }
+            document.onmouseup = function () {
+                this.mousedown = null;
+                this.onmousemove = null;
+                var width = $('.pass')[0].offsetWidth
+                var longpercent = width / 200
+                var time = longpercent * $('#music')[0].duration
+                $('#music')[0].currentTime = time
+                process()
+            }
+            document.onmouseup = function (e) {
+                this.mousedown = null;
+                this.onmousemove = null;
+            }
+        })
+        $('.process').click(function (e) {
+            var x = e.clientX
+            var processX = $(this)[0].offsetLeft + 90;
+            $('.time-position').css("left", x - processX - 5)
+            $('.pass').css('width', x - processX)
+
+            var width = $('.pass')[0].offsetWidth
+            var longpercent = width / 200
+            var time = longpercent * $('#music')[0].duration
+            $('#music')[0].currentTime = time
+            process()
+        })
+        $('#last').click(function () {
+            var play = $('#music')[0]
+            var listen = function () {
+                setTimeout(() => {
+                    process();
+                    time();
+                    if (playState == false) {
+                        return;
+                    }
+                    return listen()
+                }, 1000);
+            }
+            musicnum--
+            if (musicnum == 0) {
+                musicnum = 10
+            }
+            $('#music').attr('src', '../music/' + musicnum + ".mp3")
+            $('#img').attr('src', '../image/' + musicnum + ".jpg")
+            listen()
+            play.play()
+            changemusicname(musicnum)
+            if (playState == false) {
+                $('.musicimg i').removeClass('fa fa - play - circle - o')
+                $('.musicimg i').addClass('fa fa-pause-circle-o')
+                $('.musicimg i').addClass('musicimgPause')
+                $('#play').removeClass('fa fa-play')
+                $('#play').addClass('fa fa-pause')
+                play.play()
+                listen()
+                playState = true
+                return;
+            }
+        })
+        $('#next').click(function () {
+            var play = $('#music')[0]
+            var listen = function () {
+                setTimeout(() => {
+                    process();
+                    time();
+                    if (playState == false) {
+                        return;
+                    }
+                    return listen()
+                }, 1000);
+            }
+            musicnum++
+            if (musicnum == 11) {
+                musicnum = 1
+            }
+            $('#music').attr('src', '../music/' + musicnum + ".mp3")
+            $('#img').attr('src', '../image/' + musicnum + ".jpg")
+            listen()
+            play.play()
+            changemusicname(musicnum)
+            if (playState == false) {
+                $('.musicimg i').removeClass('fa fa - play - circle - o')
+                $('.musicimg i').addClass('fa fa-pause-circle-o')
+                $('.musicimg i').addClass('musicimgPause')
+                $('#play').removeClass('fa fa-play')
+                $('#play').addClass('fa fa-pause')
+                play.play()
+                listen()
+                playState = true
+                return;
+            }
+        })
+        $('#play').click(function () {
+            var listen = function () {
+                setTimeout(() => {
+                    process();
+                    time();
+                    if (playState == false) {
+                        return;
+                    }
+                    return listen()
+                }, 1000);
+            }
+            var play = $('#music')[0]
+            if (playState == false) {
+                $('.musicimg i').removeClass('fa fa - play - circle - o')
+                $('.musicimg i').addClass('fa fa-pause-circle-o')
+                $('.musicimg i').addClass('musicimgPause')
+                $('#play').removeClass('fa fa-play')
+                $('#play').addClass('fa fa-pause')
+                play.play()
+                listen()
+                playState = true
+                return;
+            }
+            if (playState == true) {
+                $('.musicimg i').removeClass('musicimgPause')
+                $('.musicimg i').removeClass('fa fa-pause-circle-o')
+                $('.musicimg i').addClass('fa fa - play - circle - o')
+                $('#play').removeClass('fa fa-pause')
+                $('#play').addClass('fa fa-play')
+                play.pause()
+                listen()
+                playState = false
+                return;
+            }
+        })
+        $('#hidden').click(function () {
+            if (hidden == false) {
+                $('.controller').css('display', 'none')
+                $('.music-player').css('width', '100')
+                $('#hidden').css('left', '80px')
+                $('#hidden i').removeClass('fa fa-angle-left')
+                $('#hidden i').addClass('fa fa-angle-right')
+                hidden = true
+                return;
+            }
+            if (hidden == true) {
+                $('.controller').css('display', '')
+                $('.music-player').css('width', '450')
+                $('#hidden').css('left', '430px')
+                $('#hidden i').removeClass('fa fa-angle-right')
+                $('#hidden i').addClass('fa fa-angle-left')
+                hidden = false
+                return;
+            }
+        })
+    </script>
+</body>
+
+</html>
