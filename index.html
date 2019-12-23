@@ -41,20 +41,25 @@
     </div>
 
     <script>
+//曲目名称
         var musicname = ['Ramin-Just Like A Gold Rush', 'Christopher Larkin-City of Tears', 'fhána-ワンダーステラ',
             'Hanser-Cyberangel', 'Hanser-勾指起誓', '出羽良彰-Cry for the moon', '川井憲次-騎士王の誇り',
             '菅野祐悟-il vento doro', '斯卡布罗集市', '小林未郁-千年之羽'
         ]
+//当前播放状态
         var playState = false;
+//当前播放曲目序号
         var musicnum = 1;
+//简洁模式开启状态
         var hidden = false;
+//获取曲目播放时长和总时长
         var current = $('#music')[0].currentTime
         var duration = $('#music')[0].duration
         process()
         changemusicname(musicnum)
         time()
         listenStop()
-
+//监听播放结束后自动播放下一首
         function listenStop() {
             var current = $('#music')[0].currentTime
             var duration = $('#music')[0].duration
@@ -65,7 +70,7 @@
                 return listenStop()
             }, 1000);
         }
-
+//播放进度（用于进度条和播放时间显示）
         function process() {
             var current = $('#music')[0].currentTime
             var duration = $('#music')[0].duration
@@ -73,13 +78,13 @@
             var offsetWidth = $('.pass')[0].offsetWidth
             $('.time-position').css("left", offsetWidth - 3)
         }
-
+//更改曲目名称
         function changemusicname(musicnum) {
             musicnum--
             $('#musicname').text(musicname[musicnum])
 
         }
-
+//播放下一首
         function playNext() {
             var play = $('#music')[0]
             changemusicname(musicnum + 1)
@@ -93,7 +98,7 @@
             $('#img').attr('src', '../image/' + musicnum + ".jpg")
             play.play()
         }
-
+//播放时长和总时长显示
         function time() {
             var current = $('#music')[0].currentTime
             var duration = $('#music')[0].duration
@@ -110,6 +115,7 @@
             $('#time').html(result)
 
         }
+//播放和暂停
         $('.musicimg').click(function () {
             var play = $('#music')[0]
             var listen = function () {
@@ -144,6 +150,7 @@
                 return;
             }
         })
+ //进度条时间定位
         $('.time-position').mousedown(function (e) {
             var processX = $(this)[0].offsetParent.offsetLeft + 90;
             document.onmousemove = function (e) {
@@ -178,6 +185,7 @@
             $('#music')[0].currentTime = time
             process()
         })
+//上一首
         $('#last').click(function () {
             var play = $('#music')[0]
             var listen = function () {
@@ -211,6 +219,7 @@
                 return;
             }
         })
+  //下一首
         $('#next').click(function () {
             var play = $('#music')[0]
             var listen = function () {
@@ -244,6 +253,7 @@
                 return;
             }
         })
+//主控制面板播放暂停
         $('#play').click(function () {
             var listen = function () {
                 setTimeout(() => {
@@ -279,6 +289,7 @@
                 return;
             }
         })
+ //简洁模式隐藏主控制面板
         $('#hidden').click(function () {
             if (hidden == false) {
                 $('.controller').css('display', 'none')
